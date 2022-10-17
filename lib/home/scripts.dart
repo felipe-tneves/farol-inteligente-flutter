@@ -16,16 +16,14 @@ toggleState(TrafficLights trafficLights) async {
 
   if (result != null) {
     File file = File(result.files.single.path!);
-    Uint8List image = await file.readAsBytes();
     http.MultipartRequest request = http.MultipartRequest('POST', Uri.parse("http://127.0.0.1:8000/arquivos"));
 
     request.files.add(
       await http.MultipartFile.fromPath('meuArquivo', file.path),
     );
-
     request.fields["rua"] = "teste";
-
-    http.StreamedResponse r = await request.send();
+    await request.send();
+    
   } else {
     // User canceled the picker
   }
