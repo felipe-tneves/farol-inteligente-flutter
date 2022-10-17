@@ -17,12 +17,15 @@ toggleState(TrafficLights trafficLights) async {
   if (result != null) {
     File file = File(result.files.single.path!);
     Uint8List image = await file.readAsBytes();
-    // final Map<String, dynamic> payload = {
-    //   "meuArquivo": image.toString(),
-    //   "rua": "teste",
-    // };
-    // var response = await http.post(Uri.parse('http://127.0.0.1:8000/arquivos'), body: payload);
-    // print(response);
+    http.MultipartRequest request = http.MultipartRequest('POST', Uri.parse("http://127.0.0.1:8000/arquivos"));
+
+    request.files.add(
+      await http.MultipartFile.fromPath('meuArquivo', file.path),
+    );
+
+    request.fields["rua"] = "teste";
+
+    http.StreamedResponse r = await request.send();
   } else {
     // User canceled the picker
   }
