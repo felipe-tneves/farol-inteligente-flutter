@@ -1,19 +1,20 @@
-import 'dart:io';
-
+import 'package:bitsdojo_window/bitsdojo_window.dart';
 import 'package:flutter/material.dart';
 import 'package:semaforo_inteligente/home/home.dart';
-import 'package:semaforo_inteligente/home/components/traffic_lights.dart';
-import 'package:window_size/window_size.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
-
-  if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
-    setWindowTitle('Semáforo Inteligente');
-    setWindowMaxSize(const Size(1280, 720));
-    setWindowMinSize(const Size(1280, 720));
-  }
   runApp(const MyApp());
+  doWhenWindowReady(() {
+    final win = appWindow;
+    const initialSize = Size(800, 720);
+    win.minSize = initialSize;
+    win.size = initialSize;
+    win.maxSize = initialSize;
+    win.alignment = Alignment.center;
+    win.title = "Custom window with Flutter";
+    win.show();
+  });
 }
 
 class MyApp extends StatelessWidget {
