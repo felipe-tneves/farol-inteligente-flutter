@@ -18,6 +18,11 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  @override
+  void initState() {
+    getAllResult();
+  }
+
   //Variables
   TrafficLights lightStates = TrafficLights();
   bool isLoading = false;
@@ -25,8 +30,14 @@ class _HomePageState extends State<HomePage> {
   bool hasData = false;
   FilePickerResult? resultX;
   FilePickerResult? resultY;
-  int swapTimer = 10;
-  int yellowTimer = 3;
+  List<InfoModel> allResults = [];
+  int vehiclesRua1 = 0;
+  int vehiclesRua2 = 0;
+  int timer1 = 0;
+  int timer2 = 0;
+  int timerYellow = 3;
+  IndexEnum index = IndexEnum.equal;
+  String bias = "";
   late InfoModel infoRuaX;
   late InfoModel infoRuaY;
 
@@ -34,7 +45,7 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        toolbarHeight: 40,
+        toolbarHeight: 50,
         backgroundColor: Colors.blue,
         title: Center(
           child: WindowTitleBarBox(
@@ -52,16 +63,25 @@ class _HomePageState extends State<HomePage> {
           ),
         ),
         actions: [
-          InkWell(
-            onTap: () => appWindow.minimize(),
-            child: const Icon(
-              Icons.minimize_rounded,
-            ),
-          ),
-          InkWell(
-            onTap: () => appWindow.close(),
-            child: const Icon(
-              Icons.close_rounded,
+          Padding(
+            padding: const EdgeInsets.only(left: 8, right: 8),
+            child: Row(
+              children: [
+                InkWell(
+                  onTap: () => appWindow.minimize(),
+                  child: const Icon(
+                    Icons.minimize_rounded,
+                    size: 25,
+                  ),
+                ),
+                InkWell(
+                  onTap: () => appWindow.close(),
+                  child: const Icon(
+                    Icons.close_rounded,
+                    size: 25,
+                  ),
+                ),
+              ],
             ),
           )
         ],
@@ -69,19 +89,39 @@ class _HomePageState extends State<HomePage> {
       drawer: drawer(),
       body: Center(
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
+            Text(
+              bias,
+              style: TextStyle(fontSize: 20),
+            ),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                trafficLight(lightStates.signalOneState),
+                Column(
+                  children: [
+                    Container(
+                      color: Colors.blue,
+                      width: 180,
+                      height: 30,
+                      child: const Center(child: Text("RUA 1", style: TextStyle(fontWeight: FontWeight.bold))),
+                    ),
+                    trafficLight(lightStates.signalOneState),
+                    Container(
+                      color: Colors.transparent,
+                      width: 180,
+                      height: 30,
+                      child: Center(child: Text("$timer1 segundos", style: const TextStyle(fontWeight: FontWeight.bold))),
+                    ),
+                  ],
+                ),
                 isSimulating
                     ? InkWell(
-                        onTap: () => pause(),
+                        onTap: () => pauseSimulation(),
                         child: const Icon(
                           Icons.pause,
                           size: 72,
-                          color: Colors.blue,
+                          color: Colors.white,
                         ),
                       )
                     : InkWell(
@@ -89,12 +129,28 @@ class _HomePageState extends State<HomePage> {
                         child: const Icon(
                           Icons.play_circle_outline_rounded,
                           size: 72,
-                          color: Colors.blue,
+                          color: Colors.white,
                         ),
                       ),
-                trafficLight(lightStates.signalTwoState),
+                Column(
+                  children: [
+                    Container(
+                      color: Colors.blue,
+                      width: 180,
+                      height: 30,
+                      child: const Center(child: Text("RUA 2", style: TextStyle(fontWeight: FontWeight.bold))),
+                    ),
+                    trafficLight(lightStates.signalTwoState),
+                    Container(
+                      color: Colors.transparent,
+                      width: 180,
+                      height: 30,
+                      child: Center(child: Text("$timer2 segundos", style: const TextStyle(fontWeight: FontWeight.bold))),
+                    ),
+                  ],
+                ),
               ],
-            )
+            ),
           ],
         ),
       ),
@@ -114,7 +170,7 @@ class _HomePageState extends State<HomePage> {
         Column(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
-            const Text("Insira uma foto em cada rua", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+            const Text("Insira uma foto para cada rua", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
             Row(
               mainAxisSize: MainAxisSize.max,
               mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -213,9 +269,100 @@ class _HomePageState extends State<HomePage> {
 
   Widget drawer() {
     return SizedBox(
-      width: 500,
+      width: MediaQuery.of(context).size.width,
       child: Drawer(
-        child: Column(children: []),
+        child: Column(children: [
+          AppBar(
+            toolbarHeight: 50,
+            leading: InkWell(
+              onTap: () => Navigator.pop(context),
+              child: const Icon(
+                Icons.arrow_back_ios_new_rounded,
+              ),
+            ),
+          ),
+          SizedBox(
+            width: MediaQuery.of(context).size.width,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: const [
+                Text("RUA 1", style: TextStyle(fontSize: 20)),
+                Text("RUA 2", style: TextStyle(fontSize: 20)),
+              ],
+            ),
+          ),
+          Row(
+            children: [
+              SizedBox(
+                width: MediaQuery.of(context).size.width / 2,
+                height: 500,
+                child: ListView.builder(
+                  itemCount: allResults.length,
+                  itemBuilder: (context, index) {
+                    if (allResults[index].endereco == "rua1") {
+                      return InkWell(
+                        onTap: () {
+                          showDetails(allResults[index].clima);
+                        },
+                        child: ListTile(
+                          leading: Text("${allResults[index].hora}"),
+                          title: const Text("Veículos:"),
+                          subtitle: Text("${allResults[index].qtd}"),
+                          trailing: Icon(Icons.sunny_snowing),
+                        ),
+                      );
+                    } else {
+                      return SizedBox();
+                    }
+                  },
+                ),
+              ),
+              SizedBox(
+                width: MediaQuery.of(context).size.width / 2,
+                height: 500,
+                child: ListView.builder(
+                  itemCount: allResults.length,
+                  itemBuilder: (context, index) {
+                    if (allResults[index].endereco == "rua2") {
+                      return InkWell(
+                        onTap: () {
+                          showDetails(allResults[index].clima);
+                        },
+                        child: ListTile(
+                          leading: Text("${allResults[index].hora}"),
+                          title: const Text("Veículos:"),
+                          subtitle: Text("${allResults[index].qtd}"),
+                          trailing: Icon(Icons.sunny_snowing),
+                        ),
+                      );
+                    } else {
+                      return SizedBox();
+                    }
+                  },
+                ),
+              ),
+            ],
+          ),
+          Spacer(),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              Column(
+                children: [
+                  Text("Total de veículos circulados na rua 1:"),
+                  Text("$vehiclesRua1"),
+                ],
+              ),
+              Column(
+                children: [
+                  Text("Total de veículos circulados na rua 2:"),
+                  Text("$vehiclesRua2"),
+                ],
+              ),
+            ],
+          ),
+          Spacer(),
+        ]),
       ),
     );
   }
@@ -309,6 +456,8 @@ class _HomePageState extends State<HomePage> {
         infoRuaX = InfoModel.fromJson(jsonDecode(responseRua1.body));
         infoRuaY = InfoModel.fromJson(jsonDecode(responseRua2.body));
 
+        await getAllResult();
+
         resultX = null;
         resultY = null;
 
@@ -317,8 +466,30 @@ class _HomePageState extends State<HomePage> {
         setState(() {});
       } catch (e) {
         print(e);
+        resultX = null;
+        resultY = null;
+        isLoading = false;
+        hasData = false;
       }
     }
+  }
+
+  getAllResult() async {
+    var results = await http.get(Uri.parse("http://127.0.0.1:8000/transito"));
+
+    for (var item in jsonDecode(results.body)) {
+      allResults.add(InfoModel.fromJson(item));
+    }
+
+    for (var item in allResults) {
+      if (item.endereco == "rua1") {
+        vehiclesRua1 = vehiclesRua1 + item.qtd!.toInt();
+      }
+      if (item.endereco == "rua2") {
+        vehiclesRua2 = vehiclesRua2 + item.qtd!.toInt();
+      }
+    }
+    setState(() {});
   }
 
   simulate() async {
@@ -326,54 +497,137 @@ class _HomePageState extends State<HomePage> {
       isSimulating = true;
       var x = infoRuaX.qtd;
       var y = infoRuaY.qtd;
-      equalPattern();
-      // IndexEnum index = trafficIndex(x!, y!);
-      // switch (index) {
-      //   case IndexEnum.equal:
-      //     await equalPattern();
-      //     break;
-      //   default:
-      //     return;
-      // }
+      index = trafficIndex(x!, y!);
+      switch (index) {
+        case IndexEnum.equal:
+          bias = "Tráfego similar";
+          timer1 = 15;
+          timer2 = 15;
+          break;
+        case IndexEnum.minorXBias:
+          bias = "Rua 1 com tráfego levemente maior, preferência de sinal pequena para rua 1.";
+          timer1 = 15;
+          timer2 = 12;
+          break;
+        case IndexEnum.minorYBias:
+          bias = "Rua 2 com tráfego levemente maior, preferência de sinal pequena para rua 1.";
+          timer1 = 12;
+          timer2 = 15;
+          break;
+        case IndexEnum.moderateXBias:
+          bias = "Rua 1 com tráfego moderadamente maior, preferência de sinal média para rua 1.";
+          timer1 = 15;
+          timer2 = 10;
+          break;
+        case IndexEnum.moderateYBias:
+          bias = "Rua 2 com tráfego moderadamente maior, preferência de sinal média para rua 2.";
+          timer1 = 10;
+          timer2 = 15;
+          break;
+        case IndexEnum.highXBias:
+          bias = "Rua 1 com tráfego consideravelmente maior, preferência de sinal alta para rua 1.";
+          timer1 = 15;
+          timer2 = 8;
+          break;
+        case IndexEnum.highYBias:
+          bias = "Rua 2 com tráfego consideravelmente maior, preferência de sinal alta para rua 2.";
+          timer1 = 8;
+          timer2 = 15;
+          break;
+        case IndexEnum.extremeXBias:
+          bias = "Rua 1 com tráfego muito maior, preferência de sinal extrema para rua 1.";
+          timer1 = 15;
+          timer2 = 6;
+          break;
+        case IndexEnum.extremeYBias:
+          bias = "Rua 2 com tráfego muito maior, preferência de sinal extrema para rua 2.";
+          timer1 = 6;
+          timer2 = 15;
+          break;
+      }
+      playSimulation();
       setState(() {});
     } else {
       showDialog(
         context: context,
         builder: (BuildContext context) {
           return const AlertDialog(
-            title: Text("asd"),
-            content: Text("asdasd"),
+            title: Text("Nenhum dado para simular"),
+            content: Text("Adicione imagens para cada um dos faróis para iniciar a simulação."),
           );
         },
       );
     }
   }
 
-  pause() {
+  pauseSimulation() {
     isSimulating = false;
     lightStates.signalOneState = TrafficEnum.yellow;
     lightStates.signalTwoState = TrafficEnum.yellow;
     setState(() {});
   }
 
-  equalPattern() async {
-    while (isSimulating) {
-      lightStates.signalOneState = TrafficEnum.green;
-      lightStates.signalTwoState = TrafficEnum.red;
-      setState(() {});
-      await Future.delayed(Duration(seconds: swapTimer));
-      lightStates.signalOneState = TrafficEnum.yellow;
-      setState(() {});
-      await Future.delayed(Duration(seconds: yellowTimer));
-      lightStates.signalOneState = TrafficEnum.red;
-      lightStates.signalTwoState = TrafficEnum.green;
-      setState(() {});
-      await Future.delayed(Duration(seconds: swapTimer));
-      lightStates.signalTwoState = TrafficEnum.yellow;
-      setState(() {});
-      await Future.delayed(Duration(seconds: yellowTimer));
-    }
+  playSimulation() async {
     lightStates.signalOneState = TrafficEnum.yellow;
     lightStates.signalTwoState = TrafficEnum.yellow;
+    await Future.delayed(Duration(seconds: 3));
+    while (isSimulating) {
+      await oneIsGreen();
+      await oneIsYellow();
+      await twoIsGreen();
+      await twoIsYellow();
+    }
+  }
+
+  showDetails(info) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text("Informações de clima"),
+          content: Text("$info"),
+        );
+      },
+    );
+  }
+
+  oneIsGreen() async {
+    if (isSimulating) {
+      setState(() {
+        lightStates.signalOneState = TrafficEnum.green;
+        lightStates.signalTwoState = TrafficEnum.red;
+      });
+    }
+    await Future.delayed(Duration(seconds: timer1));
+  }
+
+  oneIsYellow() async {
+    if (isSimulating) {
+      setState(() {
+        lightStates.signalOneState = TrafficEnum.yellow;
+        lightStates.signalTwoState = TrafficEnum.red;
+      });
+    }
+    await Future.delayed(Duration(seconds: timerYellow));
+  }
+
+  twoIsGreen() async {
+    if (isSimulating) {
+      setState(() {
+        lightStates.signalOneState = TrafficEnum.red;
+        lightStates.signalTwoState = TrafficEnum.green;
+      });
+    }
+    await Future.delayed(Duration(seconds: timer2));
+  }
+
+  twoIsYellow() async {
+    if (isSimulating) {
+      setState(() {
+        lightStates.signalOneState = TrafficEnum.red;
+        lightStates.signalTwoState = TrafficEnum.yellow;
+      });
+    }
+    await Future.delayed(Duration(seconds: timerYellow));
   }
 }
