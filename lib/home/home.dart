@@ -475,6 +475,9 @@ class _HomePageState extends State<HomePage> {
   }
 
   getAllResult() async {
+    allResults.clear();
+    vehiclesRua1 = 0;
+    vehiclesRua2 = 0;
     var results = await http.get(Uri.parse("http://127.0.0.1:8000/transito"));
 
     for (var item in jsonDecode(results.body)) {
