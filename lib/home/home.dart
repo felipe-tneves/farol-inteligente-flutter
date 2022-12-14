@@ -104,14 +104,19 @@ class _HomePageState extends State<HomePage> {
                       color: Colors.blue,
                       width: 180,
                       height: 30,
-                      child: const Center(child: Text("RUA 1", style: TextStyle(fontWeight: FontWeight.bold))),
+                      child: const Center(
+                          child: Text("RUA 1",
+                              style: TextStyle(fontWeight: FontWeight.bold))),
                     ),
                     trafficLight(lightStates.signalOneState),
                     Container(
                       color: Colors.transparent,
                       width: 180,
                       height: 30,
-                      child: Center(child: Text("$timer1 segundos", style: const TextStyle(fontWeight: FontWeight.bold))),
+                      child: Center(
+                          child: Text("$timer1 segundos",
+                              style: const TextStyle(
+                                  fontWeight: FontWeight.bold))),
                     ),
                   ],
                 ),
@@ -138,14 +143,19 @@ class _HomePageState extends State<HomePage> {
                       color: Colors.blue,
                       width: 180,
                       height: 30,
-                      child: const Center(child: Text("RUA 2", style: TextStyle(fontWeight: FontWeight.bold))),
+                      child: const Center(
+                          child: Text("RUA 2",
+                              style: TextStyle(fontWeight: FontWeight.bold))),
                     ),
                     trafficLight(lightStates.signalTwoState),
                     Container(
                       color: Colors.transparent,
                       width: 180,
                       height: 30,
-                      child: Center(child: Text("$timer2 segundos", style: const TextStyle(fontWeight: FontWeight.bold))),
+                      child: Center(
+                          child: Text("$timer2 segundos",
+                              style: const TextStyle(
+                                  fontWeight: FontWeight.bold))),
                     ),
                   ],
                 ),
@@ -170,7 +180,8 @@ class _HomePageState extends State<HomePage> {
         Column(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
-            const Text("Insira uma foto para cada rua", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+            const Text("Insira uma foto para cada rua",
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
             Row(
               mainAxisSize: MainAxisSize.max,
               mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -189,7 +200,9 @@ class _HomePageState extends State<HomePage> {
                           color: resultX != null ? Colors.blue : Colors.white,
                           size: 128,
                         ),
-                        const Text("Rua 1", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold))
+                        const Text("Rua 1",
+                            style: TextStyle(
+                                fontSize: 16, fontWeight: FontWeight.bold))
                       ],
                     ),
                   ),
@@ -208,7 +221,9 @@ class _HomePageState extends State<HomePage> {
                           color: resultY != null ? Colors.blue : Colors.white,
                           size: 128,
                         ),
-                        const Text("Rua 2", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold))
+                        const Text("Rua 2",
+                            style: TextStyle(
+                                fontSize: 16, fontWeight: FontWeight.bold))
                       ],
                     ),
                   ),
@@ -434,10 +449,14 @@ class _HomePageState extends State<HomePage> {
         File file1 = File(resultX!.files.single.path!);
         File file2 = File(resultY!.files.single.path!);
 
-        http.MultipartRequest request1 = http.MultipartRequest('POST', Uri.parse("http://127.0.0.1:8000/arquivos"));
-        http.MultipartRequest request2 = http.MultipartRequest('POST', Uri.parse("http://127.0.0.1:8000/arquivos"));
-        request1.files.add(await http.MultipartFile.fromPath('meuArquivo', file1.path));
-        request2.files.add(await http.MultipartFile.fromPath('meuArquivo', file2.path));
+        http.MultipartRequest request1 = http.MultipartRequest(
+            'POST', Uri.parse("http://127.0.0.1:8000/arquivos"));
+        http.MultipartRequest request2 = http.MultipartRequest(
+            'POST', Uri.parse("http://127.0.0.1:8000/arquivos"));
+        request1.files
+            .add(await http.MultipartFile.fromPath('meuArquivo', file1.path));
+        request2.files
+            .add(await http.MultipartFile.fromPath('meuArquivo', file2.path));
         request1.fields["rua"] = "rua1";
         request2.fields["rua"] = "rua2";
 
@@ -450,11 +469,16 @@ class _HomePageState extends State<HomePage> {
         http.Response responseRua1;
         http.Response responseRua2;
 
-        responseRua1 = await http.get(Uri.parse("http://127.0.0.1:8000/transito/rua1"));
-        responseRua2 = await http.get(Uri.parse("http://127.0.0.1:8000/transito/rua2"));
+        responseRua1 =
+            await http.get(Uri.parse("http://127.0.0.1:8000/transito/rua1"));
+        responseRua2 =
+            await http.get(Uri.parse("http://127.0.0.1:8000/transito/rua2"));
 
         infoRuaX = InfoModel.fromJson(jsonDecode(responseRua1.body));
         infoRuaY = InfoModel.fromJson(jsonDecode(responseRua2.body));
+
+        print(infoRuaX.qtd);
+        print(infoRuaY.qtd);
 
         await getAllResult();
 
@@ -508,42 +532,50 @@ class _HomePageState extends State<HomePage> {
           timer2 = 15;
           break;
         case IndexEnum.minorXBias:
-          bias = "Rua 1 com tráfego levemente maior, preferência de sinal pequena para rua 1.";
+          bias =
+              "Rua 1 com tráfego levemente maior, preferência de sinal pequena para rua 1.";
           timer1 = 15;
           timer2 = 12;
           break;
         case IndexEnum.minorYBias:
-          bias = "Rua 2 com tráfego levemente maior, preferência de sinal pequena para rua 1.";
+          bias =
+              "Rua 2 com tráfego levemente maior, preferência de sinal pequena para rua 1.";
           timer1 = 12;
           timer2 = 15;
           break;
         case IndexEnum.moderateXBias:
-          bias = "Rua 1 com tráfego moderadamente maior, preferência de sinal média para rua 1.";
+          bias =
+              "Rua 1 com tráfego moderadamente maior, preferência de sinal média para rua 1.";
           timer1 = 15;
           timer2 = 10;
           break;
         case IndexEnum.moderateYBias:
-          bias = "Rua 2 com tráfego moderadamente maior, preferência de sinal média para rua 2.";
+          bias =
+              "Rua 2 com tráfego moderadamente maior, preferência de sinal média para rua 2.";
           timer1 = 10;
           timer2 = 15;
           break;
         case IndexEnum.highXBias:
-          bias = "Rua 1 com tráfego consideravelmente maior, preferência de sinal alta para rua 1.";
+          bias =
+              "Rua 1 com tráfego consideravelmente maior, preferência de sinal alta para rua 1.";
           timer1 = 15;
           timer2 = 8;
           break;
         case IndexEnum.highYBias:
-          bias = "Rua 2 com tráfego consideravelmente maior, preferência de sinal alta para rua 2.";
+          bias =
+              "Rua 2 com tráfego consideravelmente maior, preferência de sinal alta para rua 2.";
           timer1 = 8;
           timer2 = 15;
           break;
         case IndexEnum.extremeXBias:
-          bias = "Rua 1 com tráfego muito maior, preferência de sinal extrema para rua 1.";
+          bias =
+              "Rua 1 com tráfego muito maior, preferência de sinal extrema para rua 1.";
           timer1 = 15;
           timer2 = 6;
           break;
         case IndexEnum.extremeYBias:
-          bias = "Rua 2 com tráfego muito maior, preferência de sinal extrema para rua 2.";
+          bias =
+              "Rua 2 com tráfego muito maior, preferência de sinal extrema para rua 2.";
           timer1 = 6;
           timer2 = 15;
           break;
@@ -556,7 +588,8 @@ class _HomePageState extends State<HomePage> {
         builder: (BuildContext context) {
           return const AlertDialog(
             title: Text("Nenhum dado para simular"),
-            content: Text("Adicione imagens para cada um dos faróis para iniciar a simulação."),
+            content: Text(
+                "Adicione imagens para cada um dos faróis para iniciar a simulação."),
           );
         },
       );
